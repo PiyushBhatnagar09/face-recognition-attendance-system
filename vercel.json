@@ -21,7 +21,7 @@
       },
       {
         "src": "/(.*)",
-        "dest": "poll/wsgi.py"
+        "dest": "attendance_system_facial_recognition/wsgi.py"
       }
     ]
   }
