@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/admin_dashboard.css' %}">
+
+    <script  type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
+    <script>
+        $(document).ready(function(){
+            $("#train").click(function(){
+                alert("Training begun. This may take up to 5 minutes. Please wait.");
+            });
+        });
+    </script>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Attendance System Using Face Recognition</a>
+    </nav> -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="">Admin Dashboard</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto"> <!-- Adjusted to align items to the right -->
+            <li class="nav-item active">
+              <form action="{% url 'logout' %}" method="post" class="ml-auto">
+                {% csrf_token %}
+                <button type="submit" class="text-right btn-logout"><i class="fa fa-user-circle" aria-hidden="true"></i> Logout</button>
+              </form>            
+            </li>
+        </ul>
+    </div>
+</nav>
+
+  <!-- End Navbar -->
+
+  <div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-lg-12" style="background: rgba(120, 192, 243, 0.13);margin-top:3em;margin-bottom:5em;padding-top:1em;padding-bottom:3em;color:#fff;border-radius:10px;-webkit-box-shadow: 2px 2px 15px 0px rgba(0, 3, 0, 0.7);
+-moz-box-shadow:    2px 2px 15px 0px rgba(0, 3, 0, 0.434);
+box-shadow:         2px 2px 15px 0px rgba(0, 3, 0, 0.386);">
+
+      <div class="row">
+        <div class="col-md-4 text-center">
+            <a href="{% url 'register' %}">
+                <img src="{% static 'recognition/img/register.png' %}" class="img-responsive" style="width:100px;height:100px;">
+            </a>
+            <h4>Register New Employees</h4>
+        </div>
+    
+        <div class="col-md-4 text-center">
+            <a href="{% url 'add-photos' %}">
+                <img src="{% static 'recognition/img/addphotos.png' %}" class="img-responsive" style="width:100px;height:100px;">
+            </a>
+            <h4>Add Photos</h4>
+        </div>
+    
+        <div class="col-md-4 text-center">
+            <a href="{% url 'train' %}" id="train">
+                <img src="{% static 'recognition/img/train.jpeg' %}" class="img-responsive" style="width:100px;height:100px;">
+            </a>
+            <h4>Train</h4>
+        </div>
+    
+        <div class="col-md-4 text-center">
+            <a href="{% url 'view-attendance-home' %}">
+                <img src="{% static 'recognition/img/reports.png' %}" class="img-responsive" style="width:100px;height:100px;">
+            </a>
+            <h4>View Attendance Reports</h4>
+        </div>
+    </div>
+    </div>
+    </div>
+    
+    </div>
+
+<!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>
