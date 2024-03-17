@@ -10,14 +10,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='attendance',
-            name='time_in',
-            field=models.DateTimeField(null=True),
-        ),
-        migrations.AlterField(
-            model_name='attendance',
-            name='time_out',
-            field=models.DateTimeField(null=True),
-        ),
+        # migrations.AlterField(
+        #     model_name='attendance',
+        #     name='time_in',
+        #     field=models.DateTimeField(null=True),
+        # ),
+        # migrations.AlterField(
+        #     model_name='attendance',
+        #     name='time_out',
+        #     field=models.DateTimeField(null=True),
+        # ),
     ]

@@ -79,8 +79,12 @@ WSGI_APPLICATION = 'attendance_system_facial_recognition.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'railway',
+        'USER': 'postgres',
+        'PASSWORD': 'CcuYeQVdkKNHrJhjFJCjCbKTfKFolSKz',
+        'HOST': 'monorail.proxy.rlwy.net',
+        'PORT': '37820'
     }
 }
 

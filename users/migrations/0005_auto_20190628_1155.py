@@ -11,14 +11,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='attendance',
-            name='time_in',
-            field=models.DateTimeField(default=datetime.datetime.now, null=True),
-        ),
-        migrations.AlterField(
-            model_name='attendance',
-            name='time_out',
-            field=models.DateTimeField(default=datetime.datetime.now, null=True),
-        ),
+        # migrations.AlterField(
+        #     model_name='attendance',
+        #     name='time_in',
+        #     field=models.DateTimeField(default=datetime.datetime.now, null=True),
+        # ),
+        # migrations.AlterField(
+        #     model_name='attendance',
+        #     name='time_out',
+        #     field=models.DateTimeField(default=datetime.datetime.now, null=True),
+        # ),
     ]
