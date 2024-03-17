@@ -1,0 +1,12 @@
+.btn-logout {
+    color: #fff; /* Text color */
+    padding: 6px 10px;
+    border-radius: 10%;
+    background-color: #28a745; /* Green color */
+    border-color: #28a745; /* Border color */
+}
+
+.btn-logout:hover {
+    background-color: #218838; /* Darker green color on hover */
+    border-color: #1e7e34; /* Darker border color on hover */
+}

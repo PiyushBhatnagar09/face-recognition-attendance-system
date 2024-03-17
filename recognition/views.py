@@ -198,20 +198,23 @@ def update_attendance_in_db_out(present):
 		
 
 def check_validity_times(times_all):
-
 	if(len(times_all)>0):
 		sign=times_all.first().out
 	else:
 		sign=True
+
 	times_in=times_all.filter(out=False)
 	times_out=times_all.filter(out=True)
+
 	if(len(times_in)!=len(times_out)):
 		sign=True
+
 	break_hourss=0
 	if(sign==True):
-			check=False
-			break_hourss=0
-			return (check,break_hourss)
+		check=False
+		break_hourss=0
+		return (check,break_hourss)
+	
 	prev=True
 	prev_time=times_all.first().time
 
@@ -221,14 +224,13 @@ def check_validity_times(times_all):
 			check=False
 			break_hourss=0
 			return (check,break_hourss)
+		
 		if(curr==False):
 			curr_time=obj.time
 			to=curr_time
 			ti=prev_time
 			break_time=((to-ti).total_seconds())/3600
 			break_hourss+=break_time
-
-
 		else:
 			prev_time=obj.time
 
@@ -251,18 +253,16 @@ def convert_hours_to_hours_mins(hours):
 def hours_vs_date_given_employee(present_qs,time_qs,admin=True):
 	register_matplotlib_converters()
 	df_hours=[]
-	df_break_hours=[]
 	qs=present_qs
 
 	for obj in qs:
 		date=obj.date
 		times_in=time_qs.filter(date=date).filter(out=False).order_by('time')
 		times_out=time_qs.filter(date=date).filter(out=True).order_by('time')
-		times_all=time_qs.filter(date=date).order_by('time')
+
 		obj.time_in=None
 		obj.time_out=None
 		obj.hours=0
-		obj.break_hours=0
 		if (len(times_in)>0):			
 			obj.time_in=times_in.first().time
 			
@@ -274,41 +274,21 @@ def hours_vs_date_given_employee(present_qs,time_qs,admin=True):
 			to=obj.time_out
 			hours=((to-ti).total_seconds())/3600
 			obj.hours=hours
-		
-
 		else:
 			obj.hours=0
-
-		(check,break_hourss)= check_validity_times(times_all)
-		if check:
-			obj.break_hours=break_hourss
-
-
-		else:
-			obj.break_hours=0
-
-
 		
 		df_hours.append(obj.hours)
-		df_break_hours.append(obj.break_hours)
 		obj.hours=convert_hours_to_hours_mins(obj.hours)
-		obj.break_hours=convert_hours_to_hours_mins(obj.break_hours)
 			
-	
-	
-	
-	df = read_frame(qs)	
-	
-	
+	df = read_frame(qs)		
 	df["hours"]=df_hours
-	df["break_hours"]=df_break_hours
 
-	print(df)
-	
+	plt.figure(figsize=(12, 6))
 	sns.barplot(data=df,x='date',y='hours')
-	plt.xticks(rotation='vertical')
+	plt.xticks(rotation='horizontal')
 	rcParams.update({'figure.autolayout': True})
 	plt.tight_layout()
+	
 	if(admin):
 		plt.savefig('./recognition/static/recognition/img/attendance_graphs/hours_vs_date/1.png')
 		plt.close()
@@ -317,12 +297,10 @@ def hours_vs_date_given_employee(present_qs,time_qs,admin=True):
 		plt.close()
 	return qs
 	
-
-#used
 def hours_vs_employee_given_date(present_qs,time_qs):
+	#present_qs, time_qs are objects for a particular date
 	register_matplotlib_converters()
 	df_hours=[]
-	df_break_hours=[]
 	df_username=[]
 	qs=present_qs
 
@@ -330,15 +308,18 @@ def hours_vs_employee_given_date(present_qs,time_qs):
 		user=obj.user
 		times_in=time_qs.filter(user=user).filter(out=False)
 		times_out=time_qs.filter(user=user).filter(out=True)
-		times_all=time_qs.filter(user=user)
+
 		obj.time_in=None
 		obj.time_out=None
 		obj.hours=0
 		obj.hours=0
+
 		if (len(times_in)>0):			
 			obj.time_in=times_in.first().time
 		if (len(times_out)>0):
 			obj.time_out=times_out.last().time
+		
+		#calculating the total no. of hours user worked
 		if(obj.time_in is not None and obj.time_out is not None):
 			ti=obj.time_in
 			to=obj.time_out
@@ -346,33 +327,18 @@ def hours_vs_employee_given_date(present_qs,time_qs):
 			obj.hours=hours
 		else:
 			obj.hours=0
-		(check,break_hourss)= check_validity_times(times_all)
-		if check:
-			obj.break_hours=break_hourss
-
-
-		else:
-			obj.break_hours=0
-
 		
 		df_hours.append(obj.hours)
 		df_username.append(user.username)
-		df_break_hours.append(obj.break_hours)
 		obj.hours=convert_hours_to_hours_mins(obj.hours)
-		obj.break_hours=convert_hours_to_hours_mins(obj.break_hours)
-
-	
-
-
 
 	df = read_frame(qs)	
-	df['hours']=df_hours
-	df['username']=df_username
-	df["break_hours"]=df_break_hours
+	df["hours"]=df_hours
+	df["username"]=df_username
 
-
+	plt.figure(figsize=(12, 6))
 	sns.barplot(data=df,x='username',y='hours')
-	plt.xticks(rotation='vertical')
+	plt.xticks(rotation='horizontal')
 	rcParams.update({'figure.autolayout': True})
 	plt.tight_layout()
 	plt.savefig('./recognition/static/recognition/img/attendance_graphs/hours_vs_employee/1.png')
@@ -382,10 +348,7 @@ def hours_vs_employee_given_date(present_qs,time_qs):
 
 def total_number_employees():
 	qs=User.objects.all()
-	return (len(qs) -1)
-	# -1 to account for admin 
-
-
+	return (len(qs)-1) #we subtract 1 because we don't count admin as employee
 
 def employees_present_today():
 	today=datetime.date.today()
@@ -393,24 +356,19 @@ def employees_present_today():
 	return len(qs)
 
 
-
-
-#used	
 def this_week_emp_count_vs_date():
 	today=datetime.date.today()
-	some_day_last_week=today-datetime.timedelta(days=7)
-	monday_of_last_week=some_day_last_week-  datetime.timedelta(days=(some_day_last_week.isocalendar()[2] - 1))
+	some_day_last_week= today - datetime.timedelta(days=7)
+	monday_of_last_week=some_day_last_week - datetime.timedelta(days=(some_day_last_week.isocalendar()[2] - 1))
 	monday_of_this_week = monday_of_last_week + datetime.timedelta(days=7)
-	qs=Present.objects.filter(date__gte=monday_of_this_week).filter(date__lte=today)
+	
+	#qs is queryset
+	qs=Present.objects.filter(date__gte=monday_of_this_week).filter(date__lte=today) #date greater than equal to, less than equal to
 	str_dates=[]
 	emp_count=[]
 	str_dates_all=[]
 	emp_cnt_all=[]
 	cnt=0
-	
-	
-
-
 
 	for obj in qs:
 		date=obj.date
@@ -418,92 +376,64 @@ def this_week_emp_count_vs_date():
 		qs=Present.objects.filter(date=date).filter(present=True)
 		emp_count.append(len(qs))
 
-
-	while(cnt<5):
-
+	#finding the no. of employees present on each date starting from 'monday of this week'
+	while(cnt<7):
 		date=str(monday_of_this_week+datetime.timedelta(days=cnt))
 		cnt+=1
 		str_dates_all.append(date)
 		if(str_dates.count(date))>0:
 			idx=str_dates.index(date)
-
 			emp_cnt_all.append(emp_count[idx])
 		else:
 			emp_cnt_all.append(0)
 
-	
-	
-	
-
-
-
 	df=pd.DataFrame()
-	df["date"]=str_dates_all
+	df["Date"]=str_dates_all
 	df["Number of employees"]=emp_cnt_all
 	
-	
-	sns.lineplot(data=df,x='date',y='Number of employees')
+	plt.figure(figsize=(12,6))
+	sns.lineplot(data=df,x='Date',y='Number of employees')
+	plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+	plt.tight_layout()  # Adjust layout to prevent overlapping elements
 	plt.savefig('./recognition/static/recognition/img/attendance_graphs/this_week/1.png')
 	plt.close()
 
-
-
-
-
-
-#used
 def last_week_emp_count_vs_date():
 	today=datetime.date.today()
 	some_day_last_week=today-datetime.timedelta(days=7)
 	monday_of_last_week=some_day_last_week-  datetime.timedelta(days=(some_day_last_week.isocalendar()[2] - 1))
 	monday_of_this_week = monday_of_last_week + datetime.timedelta(days=7)
+
 	qs=Present.objects.filter(date__gte=monday_of_last_week).filter(date__lt=monday_of_this_week)
 	str_dates=[]
 	emp_count=[]
-
-
 	str_dates_all=[]
 	emp_cnt_all=[]
 	cnt=0
 	
-	
-
-
-
 	for obj in qs:
 		date=obj.date
 		str_dates.append(str(date))
 		qs=Present.objects.filter(date=date).filter(present=True)
 		emp_count.append(len(qs))
 
-
-	while(cnt<5):
-
+	while(cnt<7):
 		date=str(monday_of_last_week+datetime.timedelta(days=cnt))
 		cnt+=1
 		str_dates_all.append(date)
 		if(str_dates.count(date))>0:
 			idx=str_dates.index(date)
-
 			emp_cnt_all.append(emp_count[idx])
-			
 		else:
 			emp_cnt_all.append(0)
 
-	
-	
-	
-
-
-
 	df=pd.DataFrame()
-	df["date"]=str_dates_all
-	df["emp_count"]=emp_cnt_all
-	
-
-	
-	
-	sns.lineplot(data=df,x='date',y='emp_count')
+	df["Date"]=str_dates_all
+	df["Number of employees"]=emp_cnt_all
+	plt.figure(figsize=(12,6))
+	sns.lineplot(data=df,x='Date',y='Number of employees')
+	plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+	plt.tight_layout()  # Adjust layout to prevent overlapping elements
 	plt.savefig('./recognition/static/recognition/img/attendance_graphs/last_week/1.png')
 	plt.close()
 
@@ -515,10 +445,8 @@ def home(request):
 @login_required
 def dashboard(request):
 	if(request.user.username=='admin'):
-		# print("admin")
 		return render(request, 'recognition/admin_dashboard.html')
 	else:
-		# print("not admin")
 		return render(request,'recognition/employee_dashboard.html')
 
 @login_required
@@ -587,6 +515,8 @@ def mark_your_attendance(request):
 			(x,y,w,h) = face_utils.rect_to_bb(face)
 
 			face_aligned = fa.align(frame,gray_frame,face)
+
+			#we made a green color rectangle on your face with thickness 1
 			cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), 1)
 					
 			#calculate the prediction and probability of face identity using the svc model
@@ -608,12 +538,12 @@ def mark_your_attendance(request):
 					count[pred] = count.get(pred,0) + 1
 					print(pred, present[pred], count[pred])
 
+				#we put person name + probability in the camera window below the green rectangle
 				cv2.putText(frame, str(person_name)+ str(prob), (x+6,y+h-6), cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,255,0),1)
 
 			else:
 				person_name="unknown"
 				cv2.putText(frame, str(person_name), (x+6,y+h-6), cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,255,0),1)
-
 
 		#Showing the image in another window
 		cv2.imshow("Mark Attendance - In - Press q to exit",frame)
@@ -633,65 +563,48 @@ def mark_your_attendance(request):
 
 def mark_your_attendance_out(request):
 	detector = dlib.get_frontal_face_detector()
-	
 	predictor = dlib.shape_predictor('face_recognition_data/shape_predictor_68_face_landmarks.dat')   #Add path to the shape predictor ######CHANGE TO RELATIVE PATH LATER
 	svc_save_path="face_recognition_data/svc.sav"	
 
-
-		
-			
 	with open(svc_save_path, 'rb') as f:
 			svc = pickle.load(f)
+
 	fa = FaceAligner(predictor , desiredFaceWidth = 96)
 	encoder=LabelEncoder()
-	encoder.classes_ = np.load('face_recognition_data/classes.npy')
+	encoder.classes_ = np.load('face_recognition_data/classes.npy') #stores the y labels i.e. person names in numerical format
 
-
-	faces_encodings = np.zeros((1,128))
-	no_of_faces = len(svc.predict_proba(faces_encodings)[0])
+	faces_encodings = np.zeros((1,128)) #empty 2D array with 1 row and 128 columns
+	no_of_faces = len(svc.predict_proba(faces_encodings)[0]) #all faces that our model can predict
 	count = dict()
 	present = dict()
 	log_time = dict()
 	start = dict()
+
 	for i in range(no_of_faces):
 		count[encoder.inverse_transform([i])[0]] = 0
 		present[encoder.inverse_transform([i])[0]] = False
 
-	
-
 	vs = VideoStream(src=0).start()
 	
-	sampleNum = 0
-	
 	while(True):
-		
 		frame = vs.read()
-		
 		frame = imutils.resize(frame ,width = 800)
-		
 		gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-		
+
+		#take faces from the camera
 		faces = detector(gray_frame,0)
-		
-		
-
-
+	
 		for face in faces:
-			print("INFO : inside for loop")
 			(x,y,w,h) = face_utils.rect_to_bb(face)
-
-			face_aligned = fa.align(frame,gray_frame,face)
-			cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),1)
+			face_aligned = fa.align(frame,gray_frame,face) #standardizing the face image
+			cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),1) #green rectangle
 					
-			
-			(pred,prob)=predict(face_aligned,svc)
-			
-
+			(pred,prob)=predict(face_aligned, svc) #predicted person name(numerical format) and probability
 			
 			if(pred!=[-1]):
-				
 				person_name=encoder.inverse_transform(np.ravel([pred]))[0]
 				pred=person_name
+
 				if count[pred] == 0:
 					start[pred] = time.time()
 					count[pred] = count.get(pred,0) + 1
@@ -699,31 +612,20 @@ def mark_your_attendance_out(request):
 				if count[pred] == 4 and (time.time()-start[pred]) > 1.5:
 					count[pred] = 0
 				else:
-				#if count[pred] == 4 and (time.time()-start) <= 1.5:
 					present[pred] = True
 					log_time[pred] = datetime.datetime.now()
 					count[pred] = count.get(pred,0) + 1
 					print(pred, present[pred], count[pred])
+
 				cv2.putText(frame, str(person_name)+ str(prob), (x+6,y+h-6), cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,255,0),1)
 
 			else:
 				person_name="unknown"
 				cv2.putText(frame, str(person_name), (x+6,y+h-6), cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,255,0),1)
 
-			
-			
-			#cv2.putText()
-			# Before continuing to the next loop, I want to give it a little pause
-			# waitKey of 100 millisecond
-			#cv2.waitKey(50)
-
 		#Showing the image in another window
-		#Creates a window with window name "Face" and with the image img
 		cv2.imshow("Mark Attendance- Out - Press q to exit",frame)
-		#Before closing it we need to give a wait command, otherwise the open cv wont work
-		# @params with the millisecond of delay 1
-		#cv2.waitKey(1)
-		#To get out of the loop
+		
 		key=cv2.waitKey(50) & 0xFF
 		if(key==ord("q")):
 			break
@@ -736,9 +638,6 @@ def mark_your_attendance_out(request):
 	update_attendance_in_db_out(present)
 	return redirect('home')
 
-
-
-
 @login_required
 def train(request):
 	#only admin can train the model
@@ -747,15 +646,6 @@ def train(request):
 
 	training_dir='face_recognition_data/training_dataset'
 	
-	# count=0
-	# for person_name in os.listdir(training_dir):
-	# 	curr_directory=os.path.join(training_dir,person_name)
-	# 	if not os.path.isdir(curr_directory):
-	# 		continue
-
-	# 	for imagefile in image_files_in_folder(curr_directory):
-	# 		count+=1
-
 	X=[]
 	y=[]
 	i=0
@@ -845,45 +735,33 @@ def view_attendance_home(request):
 def view_attendance_date(request):
 	if request.user.username!='admin':
 		return redirect('not-authorised')
+	
 	qs=None
 	time_qs=None
 	present_qs=None
-
 
 	if request.method=='POST':
 		form=DateForm(request.POST)
 		if form.is_valid():
 			date=form.cleaned_data.get('date')
-			print("date:"+ str(date))
 			time_qs=Time.objects.filter(date=date)
 			present_qs=Present.objects.filter(date=date)
+
 			if(len(time_qs)>0 or len(present_qs)>0):
 				qs=hours_vs_employee_given_date(present_qs,time_qs)
-
-
 				return render(request,'recognition/view_attendance_date.html', {'form' : form,'qs' : qs })
 			else:
 				messages.warning(request, f'No records for selected date.')
 				return redirect('view-attendance-date')
-
-
-			
-			
-			
-		
-
-
 	else:
-		
-
 			form=DateForm()
 			return render(request,'recognition/view_attendance_date.html', {'form' : form, 'qs' : qs})
-
 
 @login_required
 def view_attendance_employee(request):
 	if request.user.username!='admin':
 		return redirect('not-authorised')
+	
 	time_qs=None
 	present_qs=None
 	qs=None
@@ -892,12 +770,12 @@ def view_attendance_employee(request):
 		form=UsernameAndDateForm(request.POST)
 		if form.is_valid():
 			username=form.cleaned_data.get('username')
+
 			if username_present(username):
-				
 				u=User.objects.get(username=username)
-				
 				time_qs=Time.objects.filter(user=u)
 				present_qs=Present.objects.filter(user=u)
+
 				date_from=form.cleaned_data.get('date_from')
 				date_to=form.cleaned_data.get('date_to')
 				
@@ -905,8 +783,6 @@ def view_attendance_employee(request):
 					messages.warning(request, f'Invalid date selection.')
 					return redirect('view-attendance-employee')
 				else:
-					
-
 					time_qs=time_qs.filter(date__gte=date_from).filter(date__lte=date_to).order_by('-date')
 					present_qs=present_qs.filter(date__gte=date_from).filter(date__lte=date_to).order_by('-date')
 					
@@ -914,26 +790,14 @@ def view_attendance_employee(request):
 						qs=hours_vs_date_given_employee(present_qs,time_qs,admin=True)
 						return render(request,'recognition/view_attendance_employee.html', {'form' : form, 'qs' :qs})
 					else:
-						#print("inside qs is None")
 						messages.warning(request, f'No records for selected duration.')
 						return redirect('view-attendance-employee')
-
-
-
-			
-			
-				
 			else:
-				print("invalid username")
 				messages.warning(request, f'No such username found.')
 				return redirect('view-attendance-employee')
-
-
 	else:
-		
-
-			form=UsernameAndDateForm()
-			return render(request,'recognition/view_attendance_employee.html', {'form' : form, 'qs' :qs})
+		form=UsernameAndDateForm()
+		return render(request,'recognition/view_attendance_employee.html', {'form' : form, 'qs' :qs})
 
 
 @login_required
@@ -944,20 +808,21 @@ def view_my_attendance_employee_login(request):
 	qs=None
 	time_qs=None
 	present_qs=None
+
 	if request.method=='POST':
 		form=DateForm_2(request.POST)
 		if form.is_valid():
 			u=request.user
 			time_qs=Time.objects.filter(user=u)
 			present_qs=Present.objects.filter(user=u)
+
 			date_from=form.cleaned_data.get('date_from')
 			date_to=form.cleaned_data.get('date_to')
+
 			if date_to < date_from:
 					messages.warning(request, f'Invalid date selection.')
 					return redirect('view-my-attendance-employee-login')
 			else:
-					
-
 					time_qs=time_qs.filter(date__gte=date_from).filter(date__lte=date_to).order_by('-date')
 					present_qs=present_qs.filter(date__gte=date_from).filter(date__lte=date_to).order_by('-date')
 				
