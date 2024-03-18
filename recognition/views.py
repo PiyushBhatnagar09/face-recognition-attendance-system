@@ -84,20 +84,21 @@ def create_dataset(username):
 		#In above 'faces' variable there can be multiple faces so we have to get each and every face and draw a rectangle around it.
 		
 		for face in faces:
+			# print('Face: ', face)
 			#rectangle to bounding box
 			"""
 			we normally think of a bounding box in terms of “(x, y, width, height)” so as a matter of convenience, 
 			the rect_to_bb function takes this rect object and transforms it into a 4-tuple of coordinates.
 			"""
 			(x,y,w,h) = face_utils.rect_to_bb(face)
-
-			face_aligned = fa.align(frame, gray_frame, face)
+			# print('CHECK:', frame, gray_frame, face)
+			face_aligned = fa.align(frame,gray_frame,face)
 			# So now we captured a face, we need to write it in a file
 			sampleNum = sampleNum+1
 			# Saving the image dataset, but only the face part, cropping the rest
 			
 			if face is None:
-				print("face is none")
+				# print("face is none")
 				continue
 
 			cv2.imwrite(directory+'/'+str(sampleNum)+'.jpg'	, face_aligned)
@@ -160,9 +161,10 @@ def vizualize_Data(embedded, targets,):
 	plt.close()
 
 def update_attendance_in_db_in(present):
+	# print('here')
     today = datetime.date.today()
     time = datetime.datetime.now()
-    
+    # print('CHECK: ', present)
     for person in present:
         user = User.objects.get(username=person)
         try:
@@ -460,6 +462,7 @@ def add_photos(request):
 		username=data.get('username')
 		if username_present(username):
 			#take images of user and create dataset by marking all the 68 facial landmarks on face
+			# print('Username: ', username)
 			create_dataset(username)
 			messages.success(request, f'Dataset Created')
 			return redirect('add-photos')
@@ -536,7 +539,7 @@ def mark_your_attendance(request):
 					present[pred] = True
 					log_time[pred] = datetime.datetime.now()
 					count[pred] = count.get(pred,0) + 1
-					print(pred, present[pred], count[pred])
+					# print(pred, present[pred], count[pred])
 
 				#we put person name + probability in the camera window below the green rectangle
 				cv2.putText(frame, str(person_name)+ str(prob), (x+6,y+h-6), cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,255,0),1)
@@ -557,7 +560,7 @@ def mark_your_attendance(request):
 
 	# destroying all the windows
 	cv2.destroyAllWindows()
-	print('PRESENT: ', present)
+	# print('PRESENT: ', present)
 	update_attendance_in_db_in(present)
 	return redirect('home')
 
@@ -615,7 +618,7 @@ def mark_your_attendance_out(request):
 					present[pred] = True
 					log_time[pred] = datetime.datetime.now()
 					count[pred] = count.get(pred,0) + 1
-					print(pred, present[pred], count[pred])
+					# print(pred, present[pred], count[pred])
 
 				cv2.putText(frame, str(person_name)+ str(prob), (x+6,y+h-6), cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,255,0),1)
 
@@ -651,13 +654,13 @@ def train(request):
 	i=0
 
 	for person_name in os.listdir(training_dir):
-		print(str(person_name))
+		# print(str(person_name))
 		curr_directory=os.path.join(training_dir, person_name)
 		if not os.path.isdir(curr_directory):
 			continue
 
 		for imagefile in image_files_in_folder(curr_directory):
-			print(str(imagefile))
+			# print(str(imagefile))
 			image=cv2.imread(imagefile)
 			try:
 				"""
@@ -671,7 +674,7 @@ def train(request):
 				y.append(person_name)
 				i+=1
 			except:
-				print("Removed Image")
+				# print("Removed Image")
 				os.remove(imagefile)
 
 	# print('X: ', X)
