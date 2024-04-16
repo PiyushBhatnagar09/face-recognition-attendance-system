@@ -12,6 +12,7 @@ from imutils.face_utils import FaceAligner
 import time
 from attendance_system_facial_recognition.settings import BASE_DIR
 import os
+# print("yah")
 import face_recognition
 from face_recognition.face_recognition_cli import image_files_in_folder
 import pickle

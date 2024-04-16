@@ -143,5 +143,10 @@ WTForms==3.1.2
 zipp==3.17.0
 
 
-
 align build func is giving error, so goto the inbuilt func. using the error and replace // with /
+
+Commands :-
+python manage.py runserver
+pip install -r requirements.txt
+pip install setuptools
+python manage.py runserver 127.0.0.1:8000
