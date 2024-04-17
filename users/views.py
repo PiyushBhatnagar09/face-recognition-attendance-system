@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 @login_required
 def register(request):
+	# only admin can register employees
 	if request.user.username!='admin':
 		return redirect('not-authorised')
 	

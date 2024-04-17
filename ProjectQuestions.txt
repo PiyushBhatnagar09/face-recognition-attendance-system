@@ -1,0 +1,17 @@
+Models:
+There are two models: user, present, time
+User: default model used for users login
+
+Present: (tells whether a particular user is present on a particular date or not)
+->has user which is foreign key for User model (if a user gets deleted then all its present records will also be deleted)
+->date: default date as today
+->present: default False
+
+Time: (tells the time of in and out of a particular user on a particular date)
+->user (foreigne key), {Time rows for that user gets deleted when user gets deleted}
+->date
+->time
+->out (true or false)
+
+Database used: postgresql
+
