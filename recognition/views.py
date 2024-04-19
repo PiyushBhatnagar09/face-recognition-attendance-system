@@ -1,4 +1,6 @@
 from django.shortcuts import render,redirect
+
+#all forms
 from .forms import usernameForm,DateForm,UsernameAndDateForm, DateForm_2
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -12,7 +14,6 @@ from imutils.face_utils import FaceAligner
 import time
 from attendance_system_facial_recognition.settings import BASE_DIR
 import os
-# print("yah")
 import face_recognition
 from face_recognition.face_recognition_cli import image_files_in_folder
 import pickle
@@ -30,7 +31,6 @@ from users.models import Present, Time
 import seaborn as sns
 import pandas as pd
 from django.db.models import Count
-#import mpld3
 import matplotlib.pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 from matplotlib import rcParams
@@ -44,33 +44,27 @@ def username_present(username):
 		return True
 	return False
 
-
+#create dataset of a particular user: We are only converting the image to grayscale because it is then easy to detect face in the image and then we crop the original image such that only face is visible.
 def create_dataset(username):
 	id = username
 
-	#path for storing the dataset
+	#path for storing the dataset(if path not present then create one)
 	if(os.path.exists('face_recognition_data/training_dataset/{}/'.format(id))==False):
 		os.makedirs('face_recognition_data/training_dataset/{}/'.format(id))
+
 	directory='face_recognition_data/training_dataset/{}/'.format(id)
 
-	#dlib's shape_predictor works only with HOG's face detector which we can use using get_frontal_face_detector
 	#'detector' will detect the faces in the given grayscale image and will give us the coordinate where the faces are located
-	#'predictor' will give the coordinates of all the 68 face landmarks in the face in the image
-	print("[INFO] Loading the facial detector")
 	detector = dlib.get_frontal_face_detector()
-	predictor = dlib.shape_predictor('face_recognition_data/shape_predictor_68_face_landmarks.dat')   #Add path to the shape predictor ######CHANGE TO RELATIVE PATH LATER
+	#'predictor' will give the coordinates of all the 68 face landmarks in the face in the image
+	predictor = dlib.shape_predictor('face_recognition_data/shape_predictor_68_face_landmarks.dat')
+	#face aligner is used to align or normalize face into a standardized position or orientation
 	fa = FaceAligner(predictor , desiredFaceWidth = 96)
-
-	#using our camera
-	print("[INFO] Initializing Video stream")
+	#accessing pc's camera
 	vs = VideoStream(src=0).start()
 
-	# Our identifier
-	# We will put the id here and we will store the id with a face, so that later we can identify whose face it is
-	
-	# Our dataset naming counter
 	sampleNum = 0
-	# Capturing the faces one by one and detect the faces and showing it on the window
+	# Capturing the faces one by one
 	while(True):
 		#capturing image from our camera
 		frame = vs.read()
@@ -79,27 +73,24 @@ def create_dataset(username):
 		frame = imutils.resize(frame ,width = 800)
 		gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-		#This will detect all the images in the current frame, and it will return the coordinates of the faces
-		#Takes in image and some other parameter for accurate result
+		#This will detect all the faces in the current frame, and it will return the coordinates of the faces
 		faces = detector(gray_frame,0)
 		#In above 'faces' variable there can be multiple faces so we have to get each and every face and draw a rectangle around it.
 		
 		for face in faces:
-			# print('Face: ', face)
 			#rectangle to bounding box
 			"""
 			we normally think of a bounding box in terms of “(x, y, width, height)” so as a matter of convenience, 
 			the rect_to_bb function takes this rect object and transforms it into a 4-tuple of coordinates.
 			"""
 			(x,y,w,h) = face_utils.rect_to_bb(face)
-			# print('CHECK:', frame, gray_frame, face)
+			
+			#aligning or normalizing the face into standardized position or orientation ('fa' is the instance of FaceAligner we made)
 			face_aligned = fa.align(frame,gray_frame,face)
-			# So now we captured a face, we need to write it in a file
+
 			sampleNum = sampleNum+1
-			# Saving the image dataset, but only the face part, cropping the rest
 			
 			if face is None:
-				# print("face is none")
 				continue
 
 			cv2.imwrite(directory+'/'+str(sampleNum)+'.jpg'	, face_aligned)
@@ -114,6 +105,7 @@ def create_dataset(username):
 		#Showing the image in another window
 		#Creates a window with window name "Face" and with the image img
 		cv2.imshow("Add Images",frame)
+
 		#Before closing it we need to give a wait command, otherwise the open cv wont work
 		cv2.waitKey(1)
 
@@ -127,42 +119,58 @@ def create_dataset(username):
 	cv2.destroyAllWindows()
 
 
-def predict(face_aligned,svc,threshold=0.7):
-	face_encodings=np.zeros((1,128))
+def predict(face_aligned, svc, threshold=0.7):
+	face_encodings = np.zeros((1,128))
+
+	"""
+	Face encodings are numerical representations of facial features that can be used for face recognition tasks. The face_recognition.face_encodings function is used to extract these encodings from the aligned face image.
+	"""
 	try:
 		x_face_locations=face_recognition.face_locations(face_aligned)
 		faces_encodings=face_recognition.face_encodings(face_aligned,known_face_locations=x_face_locations)
+
+		#if no face is detected
 		if(len(faces_encodings)==0):
 			return ([-1],[0])
 
 	except:
-
 		return ([-1],[0])
 
 	prob=svc.predict_proba(faces_encodings)
+
+	#finding the index of the class with highest probability
 	result=np.where(prob[0]==np.amax(prob[0]))
+
+	#if highest prob. is less or equal to threshold then no valid prediction is made
 	if(prob[0][result[0]]<=threshold):
 		return ([-1],prob[0][result[0]])
 
+	#returning predicted class index and it's probability
 	return (result[0],prob[0][result[0]])
 
 
-def vizualize_Data(embedded, targets,):
-	
+def vizualize_Data(embedded, targets,): #Draw scatter plot
+	# print("Embedded: ", embedded)
+	# print("Targets: ", targets)
+	"""
+	The embedded data points are transformed into a two-dimensional space using t-Distributed Stochastic Neighbor Embedding (t-SNE) with two components. 
+	"""
 	X_embedded = TSNE(n_components=2).fit_transform(embedded)
-
-	for i, t in enumerate(set(targets)):
-		idx = targets == t
+	# print("X_embedded: ", X_embedded)
+ 
+	for i, t in enumerate(set(targets)): #t's value is [piyush_0902, abhinav_07, vinita_20] one by one because we are using 'set' (unique values)
+		idx = targets == t #idx is an array of (true, false) denoting which entry in target array matches with 't'
+		# print("idx, i : ", idx, i)
 		plt.scatter(X_embedded[idx, 0], X_embedded[idx, 1], label=t)
 
-	plt.legend(bbox_to_anchor=(1, 1));
+	plt.legend(bbox_to_anchor=(1, 1))
 	rcParams.update({'figure.autolayout': True})
 	plt.tight_layout()	
 	plt.savefig('./recognition/static/recognition/img/training_visualisation.png')
 	plt.close()
 
+
 def update_attendance_in_db_in(present):
-	# print('here')
     today = datetime.date.today()
     time = datetime.datetime.now()
     # print('CHECK: ', present)
@@ -189,7 +197,6 @@ def update_attendance_in_db_in(present):
             a = Time(user=user, date=today, time=time, out=False)
             a.save()
 
-		
 def update_attendance_in_db_out(present):
 	today=datetime.date.today()
 	time=datetime.datetime.now()
@@ -198,61 +205,15 @@ def update_attendance_in_db_out(present):
 		if present[person]==True:
 			a=Time(user=user,date=today,time=time, out=True)
 			a.save()
-		
-
-def check_validity_times(times_all):
-	if(len(times_all)>0):
-		sign=times_all.first().out
-	else:
-		sign=True
-
-	times_in=times_all.filter(out=False)
-	times_out=times_all.filter(out=True)
-
-	if(len(times_in)!=len(times_out)):
-		sign=True
-
-	break_hourss=0
-	if(sign==True):
-		check=False
-		break_hourss=0
-		return (check,break_hourss)
-	
-	prev=True
-	prev_time=times_all.first().time
-
-	for obj in times_all:
-		curr=obj.out
-		if(curr==prev):
-			check=False
-			break_hourss=0
-			return (check,break_hourss)
-		
-		if(curr==False):
-			curr_time=obj.time
-			to=curr_time
-			ti=prev_time
-			break_time=((to-ti).total_seconds())/3600
-			break_hourss+=break_time
-		else:
-			prev_time=obj.time
-
-		prev=curr
-
-	return (True,break_hourss)
-
 
 def convert_hours_to_hours_mins(hours):
-	
 	h=int(hours)
 	hours-=h
 	m=hours*60
 	m=math.ceil(m)
 	return str(str(h)+ " hrs " + str(m) + "  mins")
 
-		
-
-#used
+#-----------------------------------------------------------------Display Graphs---------------------------------------------------------
 def hours_vs_date_given_employee(present_qs,time_qs,admin=True):
 	register_matplotlib_converters()
 	df_hours=[]
@@ -440,8 +401,8 @@ def last_week_emp_count_vs_date():
 	plt.savefig('./recognition/static/recognition/img/attendance_graphs/last_week/1.png')
 	plt.close()
 
+#-------------------------------------------------------------------------------------------------------------------------------------
 
-# Create your views here.
 def home(request):
 	return render(request, 'recognition/home.html')
 
@@ -476,7 +437,7 @@ def add_photos(request):
 
 def mark_your_attendance(request):
 	detector = dlib.get_frontal_face_detector()
-	predictor = dlib.shape_predictor('face_recognition_data/shape_predictor_68_face_landmarks.dat')   #Add path to the shape predictor ######CHANGE TO RELATIVE PATH LATER
+	predictor = dlib.shape_predictor('face_recognition_data/shape_predictor_68_face_landmarks.dat')
 	
 	#using our trained svc model for classification
 	svc_save_path="face_recognition_data/svc.sav"	
@@ -567,7 +528,7 @@ def mark_your_attendance(request):
 
 def mark_your_attendance_out(request):
 	detector = dlib.get_frontal_face_detector()
-	predictor = dlib.shape_predictor('face_recognition_data/shape_predictor_68_face_landmarks.dat')   #Add path to the shape predictor ######CHANGE TO RELATIVE PATH LATER
+	predictor = dlib.shape_predictor('face_recognition_data/shape_predictor_68_face_landmarks.dat')
 	svc_save_path="face_recognition_data/svc.sav"	
 
 	with open(svc_save_path, 'rb') as f:
@@ -578,14 +539,22 @@ def mark_your_attendance_out(request):
 	encoder.classes_ = np.load('face_recognition_data/classes.npy') #stores the y labels i.e. person names in numerical format
 
 	faces_encodings = np.zeros((1,128)) #empty 2D array with 1 row and 128 columns
-	no_of_faces = len(svc.predict_proba(faces_encodings)[0]) #all faces that our model can predict
+	no_of_faces = len(svc.predict_proba(faces_encodings)[0]) #total number of faces that our model can predict
 	count = dict()
 	present = dict()
 	log_time = dict()
 	start = dict()
 
-	for i in range(no_of_faces):
+	""" TO UNDERSTAND HOW inverse_transform works :-
+	>>> le.transform([1, 1, 2, 6])
+	array([0, 0, 1, 2]...)
+	>>> le.inverse_transform([0, 0, 1, 2])
+	array([1, 1, 2, 6])
+	"""
+	for i in range(no_of_faces): #i is index
+		#count of each face is initially set to 0
 		count[encoder.inverse_transform([i])[0]] = 0
+		#each face is initially marked as absent i.e. false
 		present[encoder.inverse_transform([i])[0]] = False
 
 	vs = VideoStream(src=0).start()
@@ -642,6 +611,8 @@ def mark_your_attendance_out(request):
 	update_attendance_in_db_out(present)
 	return redirect('home')
 
+
+#---------------------------------------------------------------------ADMIN-------------------------------------------------------------------------
 @login_required
 def train(request):
 	#only admin can train the model
@@ -701,9 +672,11 @@ def train(request):
 	# print(X1)
 	# print("shape: "+ str(X1.shape))
 	# print('Encoder classes: ', encoder.classes_)
+ 
+	#encoder.classes_ stores information related to which label is represented as which numerical representation, so that we can inverse transform it later on
 	np.save('face_recognition_data/classes.npy', encoder.classes_)
 
-	#NOTEE: svc model requires atleast two classes to make the hyperplane to classify input into classes.
+	# N O T E: svc model requires atleast two classes to make the hyperplane to classify input into classes.
 	"""
 	Here's what a linear kernel does:
 
@@ -712,8 +685,9 @@ def train(request):
 	Hyperplane: In the transformed space, the linear kernel aims to find a hyperplane that separates the data points of different classes with the maximum margin. 
 	This hyperplane is a decision boundary that separates the classes as cleanly as possible.
 	"""
+	#see the link: https://www.geeksforgeeks.org/creating-linear-kernel-svm-in-python/ to understand linear kernel(basically to separate the classes using linear lines)
 	svc = SVC(kernel='linear', probability=True)
-	svc.fit(X1,y)
+	svc.fit(X1,y) #fitting our svc model with the dataset
 	svc_save_path="face_recognition_data/svc.sav"
 	with open(svc_save_path, 'wb') as f:
 		pickle.dump(svc,f)

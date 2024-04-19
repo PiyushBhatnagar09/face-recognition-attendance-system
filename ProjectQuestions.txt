@@ -1,3 +1,8 @@
+WORD WRAP : alt + Z
+
+passowrd for all user !!
+->PBpiyush123
+---------------------------------------------------------------------------------------------------------------------------------------------------
 Models:
 There are two models: user, present, time
 User: default model used for users login
@@ -12,6 +17,53 @@ Time: (tells the time of in and out of a particular user on a particular date)
 ->date
 ->time
 ->out (true or false)
-
+---------------------------------------------------------------------------------------------------------------------------------------------------
 Database used: postgresql
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q. Explain your project?
+This is an face recognition attendance system. Employees can mark their attendance on this website and system will identify the user and record it's attendance.
+Instead of traditional methods like signing a paper or swiping a card, this system scans the faces of indivisuals. Admin can view attendance records of each employee.
+Employees can also view his attendance records.
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q. Short explanation of my face recognition attendance system?
+Your face recognition attendance system is a modern technology that uses facial recognition algorithms to accurately identify and record the attendance of individuals. Instead of traditional methods like signing a paper or swiping a card, this system scans the faces of individuals as they enter a designated area. It matches their facial features against a database of known faces, allowing for quick and efficient attendance tracking without the need for physical interaction. This system offers convenience, security, and accuracy in managing attendance records.
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q. But what is the need of this system for attendance like what problem it solves?
+Accuracy: Manual entry or card swiping can be prone to errors such as incorrect entries or one person signing in for another. Face recognition technology ensures accurate attendance tracking by uniquely identifying individuals based on their facial features.
 
+Efficiency: With face recognition, the process of recording attendance becomes faster and more efficient. There's no need for individuals to carry or swipe cards, or for staff to manually record attendance data. This saves time and reduces administrative burden.
+
+Security: Face recognition adds an extra layer of security to the attendance tracking process. It helps prevent unauthorized access by ensuring that only registered individuals can gain entry, reducing the risk of impersonation or unauthorized attendance.
+
+Contactless Interaction: Particularly relevant in situations where hygiene is important (such as during a pandemic), face recognition allows for contactless attendance tracking. There's no need for individuals to touch shared surfaces like fingerprint scanners or keypads, minimizing the risk of spreading germs.
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q. Is there any drawback for this face recognition attendance system?
+Privacy Concerns: Facial recognition technology involves capturing and storing biometric data. Some people may feel uncomfortable with the idea of their facial data being collected and stored by an organization.
+
+Accuracy Issues: Changes in lighting conditions, facial expressions, or the presence of accessories (like glasses or hats) can sometimes affect the accuracy of recognition. This can lead to instances of misidentification or false positives, which may result in attendance recording errors.
+
+Cost: High cost of hardware like high quality cameras and software.
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q. What if someone marks other attendance using his photograph?
+Accuracy of Recognition: High-quality face recognition systems are designed to accurately distinguish between real faces and photographs. Advanced algorithms analyze various facial features and characteristics to verify the authenticity of the presented face.
+
+User Authentication: Some face recognition systems require additional forms of authentication, such as a PIN or biometric verification (e.g., fingerprint scan), to supplement facial recognition. This adds an extra layer of security and makes it more difficult for someone to fraudulently mark another person's attendance using a photograph.
+
+Monitoring and Oversight: Organizations may implement monitoring mechanisms to detect and deter fraudulent behavior. This could include reviewing attendance records for anomalies, conducting periodic audits, or implementing surveillance cameras to monitor the attendance marking process.
+---------------------------------------------------------------------------------------------------------------------------------------------------
+#dlib's shape_predictor works only with HOG's face detector which we can use using dlib.get_frontal_face_detector
+#'detector' will detect the faces in the given grayscale image and will give us the coordinate where the faces are located
+#'predictor' will give the coordinates of all the 68 face landmarks in the face in the image
+
+STEPS :-
+->We capture the image and convert it to grayscale
+->then we detect face using detector then we get the coordinates of the faces in the image then we align the image
+->they we get the details of the 68 landmarks of face using predictor
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Q. How you create dataset?
+We use dlib's face detector and shape_predictor to create dataset. We capture user's image then convert it to grayscale because different images have different lighting condition, so it is better to normalize the images into grayscale then we detect face in it, we draw a rectangle around the face and get it's coordinates then this information goes to shape predictor then shape predictor marks 68 landmarks on the face and stores their coordinates information in the form of data.
+->in the create_dataset function we are only converting the image to grayscale because it is then easy to detect face in the image and then we crop the original image such that only face is visible.
+
+We are making an SVC model to classify images :-
+https://www.geeksforgeeks.org/support-vector-machine-algorithm/
+https://www.geeksforgeeks.org/creating-linear-kernel-svm-in-python/

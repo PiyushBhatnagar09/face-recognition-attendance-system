@@ -35,7 +35,9 @@
                     {% csrf_token %}
                     <fieldset class="form-group">
                         <legend class="border-bottom mb-4">Log In</legend>
-                        {{ form|crispy }}
+                        <div style="color: black">
+                            {{ form|crispy }}
+                        </div>
                     </fieldset>
 
                     <div class="form-group">
