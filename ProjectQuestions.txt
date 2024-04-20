@@ -64,6 +64,10 @@ Q. How you create dataset?
 We use dlib's face detector and shape_predictor to create dataset. We capture user's image then convert it to grayscale because different images have different lighting condition, so it is better to normalize the images into grayscale then we detect face in it, we draw a rectangle around the face and get it's coordinates then this information goes to shape predictor then shape predictor marks 68 landmarks on the face and stores their coordinates information in the form of data.
 ->in the create_dataset function we are only converting the image to grayscale because it is then easy to detect face in the image and then we crop the original image such that only face is visible.
 
-We are making an SVC model to classify images :-
+We are making an SVC model to classify images :- IMP
 https://www.geeksforgeeks.org/support-vector-machine-algorithm/
 https://www.geeksforgeeks.org/creating-linear-kernel-svm-in-python/
+
+-----------------------------------------------------------
+Accuracy: 0.9666666666666667
+-----------------------------------------------------------

@@ -35,6 +35,8 @@ import matplotlib.pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 from matplotlib import rcParams
 import math
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
 
 mpl.use('Agg')
 
@@ -611,7 +613,7 @@ def mark_your_attendance_out(request):
 	update_attendance_in_db_out(present)
 	return redirect('home')
 
-
+	
 #---------------------------------------------------------------------ADMIN-------------------------------------------------------------------------
 @login_required
 def train(request):
@@ -692,7 +694,14 @@ def train(request):
 	with open(svc_save_path, 'wb') as f:
 		pickle.dump(svc,f)
 	
-	vizualize_Data(X1,targets)
+	vizualize_Data(X1,targets) 
+
+	#Finding the accuracy score of the model !!
+	# X_train, X_test, y_train, y_test = train_test_split(X1, y, test_size=0.2, random_state=42)
+	# svc.fit(X_train, y_train)
+	# y_pred = svc.predict(X_test)
+	# accuracy = accuracy_score(y_test, y_pred)
+	# print("Accuracy:", accuracy)
 	
 	messages.success(request, f'Training Complete.')
 	return render(request,"recognition/train.html")
